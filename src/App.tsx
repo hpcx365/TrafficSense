@@ -7,6 +7,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ErrorIcon from '@mui/icons-material/Error';
 import CarCrashIcon from '@mui/icons-material/CarCrash';
 import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
+import EditRoadIcon from '@mui/icons-material/EditRoad';
 
 export default function App() {
   const dialogId = useRef(0)
@@ -107,11 +108,11 @@ export default function App() {
 
   return (
     <Box sx={{height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', backgroundColor: 'white'}}>
-      <Box sx={{width: '100%'}}>
+      <Box sx={{width: '100%', boxShadow: boxShadow}}>
         <PrimarySearchAppBar/>
       </Box>
-      <Box sx={{width: '100%', height: '100%', flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden', gap: 1}}>
-        <Box sx={{width: '30%', height: '100%', display: 'flex', flexDirection: 'row', overflow: 'hidden', backgroundColor: '#f6f7fb'}}>
+      <Box sx={{width: '100%', height: '100%', flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden'}}>
+        <Box sx={{width: '30%', height: '100%', display: 'flex', flexDirection: 'row', overflow: 'hidden', backgroundColor: '#f6f7fb', boxShadow: boxShadow}}>
           <ChatArea
             dialogs={dialogs}
             messagesEndRef={messagesEndRef}
@@ -123,17 +124,21 @@ export default function App() {
             handleKeyPress={handleKeyPress}
           />
         </Box>
-        <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', gap: 1}}>
-          <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', color: '#333', backgroundColor: '#f6f7fb'}}>
-            <h3>车流量统计</h3>
+
+        <Box sx={{flex: 1, display: 'flex', flexDirection: 'column'}}>
+          <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', color: '#333', backgroundColor: '#f6f7fb', m: 2, mb: 1, boxShadow: boxShadow}}>
+            <Box sx={{display: 'flex', alignItems: 'center', backgroundColor: '#1976d2', gap: 1, p: 1}}>
+              <EditRoadIcon sx={{color: 'white'}}/>
+              <Typography variant='h5' sx={{color: 'white'}}>决策仿真</Typography>
+            </Box>
             <Box sx={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'}}></Box>
           </Box>
 
-          <Box sx={{height: '24%', display: 'flex', flexShrink: 0, gap: 1}}>
-            <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', color: '#333', backgroundColor: '#f6f7fb', p: 1}}>
-              <Box sx={{display: 'flex', alignItems: 'center', gap: 1, p: 1}}>
-                <LocalPoliceIcon sx={{fontSize: 28, color: '#1976d2'}}/>
-                <Typography variant='h5' sx={{color: '#333'}}>交警资源</Typography>
+          <Box sx={{height: '24%', display: 'flex', flexShrink: 0, m: 2, gap: 2}}>
+            <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', color: '#333', backgroundColor: '#f6f7fb', boxShadow: boxShadow}}>
+              <Box sx={{display: 'flex', alignItems: 'center', backgroundColor: '#1976d2', gap: 1, p: 1}}>
+                <LocalPoliceIcon sx={{color: 'white'}}/>
+                <Typography variant='h5' sx={{color: 'white'}}>交警资源</Typography>
               </Box>
               <InfoList policeInfo={[
                 {message: '交警A组 - 城区中心', secondary: '充足', ok: true},
@@ -143,10 +148,10 @@ export default function App() {
               ]}/>
             </Box>
 
-            <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', color: '#333', backgroundColor: '#f6f7fb', p: 1}}>
-              <Box sx={{display: 'flex', alignItems: 'center', gap: 1, p: 1}}>
-                <CarCrashIcon sx={{fontSize: 28, color: '#1976d2'}}/>
-                <Typography variant='h5' sx={{color: '#333'}}>事故列表</Typography>
+            <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', color: '#333', backgroundColor: '#f6f7fb', boxShadow: boxShadow}}>
+              <Box sx={{display: 'flex', alignItems: 'center', backgroundColor: '#1976d2', gap: 1, p: 1}}>
+                <CarCrashIcon sx={{color: 'white'}}/>
+                <Typography variant='h5' sx={{color: 'white'}}>事故列表</Typography>
               </Box>
               <InfoList policeInfo={[
                 {message: '中山路与人民路交叉口 - 轻微追尾', secondary: '处理中', ok: true},
@@ -155,10 +160,10 @@ export default function App() {
               ]}/>
             </Box>
 
-            <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', color: '#333', backgroundColor: '#f6f7fb', p: 1}}>
-              <Box sx={{display: 'flex', alignItems: 'center', gap: 1, p: 1}}>
-                <NotificationImportantIcon sx={{fontSize: 28, color: '#1976d2'}}/>
-                <Typography variant='h5' sx={{color: '#333'}}>高峰预警</Typography>
+            <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', color: '#333', backgroundColor: '#f6f7fb', boxShadow: boxShadow}}>
+              <Box sx={{display: 'flex', alignItems: 'center', backgroundColor: '#1976d2', gap: 1, p: 1}}>
+                <NotificationImportantIcon sx={{color: 'white'}}/>
+                <Typography variant='h5' sx={{color: 'white'}}>高峰预警</Typography>
               </Box>
               <Box sx={{flex: 1, overflow: 'auto'}}>
                 <List sx={{p: 0}}>
@@ -173,6 +178,8 @@ export default function App() {
     </Box>
   )
 }
+
+const boxShadow = '2px 6px 12px -2px rgba(53, 83, 245, 0.2)'
 
 interface InfoItem {
   message: string
@@ -190,7 +197,7 @@ const InfoList: React.FC<InfoListProps> = (
   }
 ) => {
   return (
-    <Box sx={{flex: 1, overflow: 'auto'}}>
+    <Box sx={{flexGrow: 1, overflow: 'auto'}}>
       <List sx={{p: 0}}>
         {policeInfo.map(infoItem => (
           <Box>
