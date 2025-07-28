@@ -142,8 +142,8 @@ export default function App() {
               </Box>
               <InfoList policeInfo={[
                 {message: '交警A组 - 城区中心', secondary: '充足', ok: true},
-                {message: '交警B组 - 商业区', secondary: '充足', ok: true},
-                {message: '交警C组 - 商业区', secondary: '紧张', ok: false},
+                {message: '交警B组 - 工业区', secondary: '充足', ok: true},
+                {message: '交警C组 - 居住区', secondary: '紧张', ok: false},
                 {message: '交警D组 - 商业区', secondary: '充足', ok: true},
               ]}/>
             </Box>
