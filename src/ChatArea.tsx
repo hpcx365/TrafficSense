@@ -35,7 +35,7 @@ export const ChatArea: React.FC<ChatAreaProps> = (
   }
 ) => {
   return (
-    <Box sx={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%', backgroundColor: '#f6f7fb'}}>
+    <Box sx={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%'}}>
       <ChatHeader/>
       <DialogHistory
         dialogs={dialogs}
@@ -90,7 +90,7 @@ export const DialogHistory: React.FC<DialogHistoryProps> = (
                 boxShadow: '0 4px 12px 1px rgba(0, 83, 245, 0.2)',
                 maxWidth: '75%',
                 textAlign: 'left',
-                position: 'relative'
+                position: 'relative',
               }}
             >
               <Typography>{dialog.text}</Typography>
@@ -109,7 +109,7 @@ export const DialogHistory: React.FC<DialogHistoryProps> = (
                 boxShadow: '0 4px 12px 1px rgba(68, 88, 199, 0.2)',
                 maxWidth: '75%',
                 textAlign: 'left',
-                position: 'relative'
+                position: 'relative',
               }}
             >
               <Typography sx={{mb: 2}}>{dialog.text}</Typography>
