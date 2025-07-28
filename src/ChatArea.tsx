@@ -3,13 +3,56 @@ import {Avatar, Box, Button, Card, TextField, Typography} from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import LightbulbIcon from "@mui/icons-material/Lightbulb";
 import SendIcon from "@mui/icons-material/Send";
-import './ScrollBar.css'
 
 export interface Dialog {
   id: number;
   text: string;
   isUser: boolean;
   timestamp: Date;
+}
+
+export interface ChatAreaProps {
+  dialogs: Dialog[]
+  messagesEndRef: React.RefObject<HTMLDivElement | null>
+  handleTraceabilityPrediction: () => void
+  handleDecisionSuggestion: () => void
+  inputValue: string
+  setInputValue: (inputValue: string) => void
+  handleSendMessage: () => void
+  handleKeyPress: (e: React.KeyboardEvent) => void
+}
+
+export const ChatArea: React.FC<ChatAreaProps> = (
+  {
+    dialogs,
+    messagesEndRef,
+    handleTraceabilityPrediction,
+    handleDecisionSuggestion,
+    inputValue,
+    setInputValue,
+    handleSendMessage,
+    handleKeyPress,
+  }
+) => {
+  return (
+    <Box sx={{display: 'flex', flexDirection: 'column', width: '100%', height: '100%', backgroundColor: '#f6f7fb'}}>
+      <ChatHeader/>
+      <DialogHistory
+        dialogs={dialogs}
+        messagesEndRef={messagesEndRef}
+      />
+      <SuggestionBar
+        handleTraceabilityPrediction={handleTraceabilityPrediction}
+        handleDecisionSuggestion={handleDecisionSuggestion}
+      />
+      <InputBar
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        handleSendMessage={handleSendMessage}
+        handleKeyPress={handleKeyPress}
+      />
+    </Box>
+  )
 }
 
 export const ChatHeader = () => {
@@ -100,7 +143,7 @@ export const SuggestionBar: React.FC<SuggestionBarProps> = (
         variant="outlined"
         onClick={handleTraceabilityPrediction}
         startIcon={<TrendingUpIcon/>}
-        sx={{borderRadius: 2, boxShadow: '#535bf233 0 4px 8px 0', "&:focus": {outline: 'none'}}}
+        sx={{borderRadius: 2, boxShadow: '#535bf233 0 4px 8px 0'}}
       >
         溯源预测
       </Button>
@@ -108,7 +151,7 @@ export const SuggestionBar: React.FC<SuggestionBarProps> = (
         variant="outlined"
         onClick={handleDecisionSuggestion}
         startIcon={<LightbulbIcon/>}
-        sx={{borderRadius: 2, boxShadow: '#535bf233 0 4px 8px 0', "&:focus": {outline: 'none'}}}
+        sx={{borderRadius: 2, boxShadow: '#535bf233 0 4px 8px 0'}}
       >
         决策建议
       </Button>
@@ -156,9 +199,6 @@ export const InputBar: React.FC<InputBarProps> = (
           width: '20%',
           borderRadius: 4,
           boxShadow: '#535bf233 0 7px 12px 0',
-          "&:focus": {
-            outline: 'none',
-          }
         }}
       >
         发送
