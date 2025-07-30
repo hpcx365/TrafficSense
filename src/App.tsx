@@ -8,6 +8,8 @@ import ErrorIcon from '@mui/icons-material/Error';
 import CarCrashIcon from '@mui/icons-material/CarCrash';
 import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
 import EditRoadIcon from '@mui/icons-material/EditRoad';
+import {LineChart} from '@mui/x-charts/LineChart';
+import {BarChart, PieChart, RadarChart} from '@mui/x-charts';
 
 export default function App() {
   const dialogId = useRef(0)
@@ -126,12 +128,75 @@ export default function App() {
         </Box>
 
         <Box sx={{flex: 1, display: 'flex', flexDirection: 'column'}}>
-          <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', color: '#333', backgroundColor: '#f6f7fb', m: 2, mb: 1, boxShadow: boxShadow}}>
+          <Box sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', overflowY: 'hidden', color: '#333', backgroundColor: '#f6f7fb', m: 2, mb: 1, boxShadow: boxShadow}}>
             <Box sx={{display: 'flex', alignItems: 'center', backgroundColor: '#1976d2', gap: 1, p: 1}}>
               <EditRoadIcon sx={{color: 'white'}}/>
               <Typography variant='h5' sx={{color: 'white'}}>决策仿真</Typography>
             </Box>
-            <Box sx={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'}}></Box>
+            <Box sx={{flex: 1, flexDirection: 'column', display: 'flex', overflowY: 'hidden'}}>
+              <Box sx={{flex: 1, flexDirection: 'row', display: 'flex', overflowY: 'hidden', gap: 2, p: 2}}>
+                <PieChart
+                  series={[
+                    {
+                      paddingAngle: 5,
+                      innerRadius: 60,
+                      outerRadius: 80,
+                      data: dataPie,
+                    },
+                  ]}
+                  width={200}
+                  height={200}
+                  sx={{boxShadow: boxShadow}}
+                />
+                <RadarChart
+                  height={300}
+                  series={[{label: 'Lisa', data: [120, 98, 86, 99, 85, 65]}]}
+                  radar={{
+                    max: 120,
+                    metrics: ['高峰承载能力', '事故处理能力', '流量运输能力', '拥堵处理能力', '行人舒适度', '噪音控制'],
+                  }}
+                  sx={{boxShadow: boxShadow}}
+                />
+              </Box>
+              <Box sx={{flex: 1, flexDirection: 'row', display: 'flex', overflowY: 'hidden', gap: 2, p: 2}}>
+                <LineChart
+                  height={300}
+                  series={[
+                    {data: pDataLine, label: '机动车总流量'},
+                    {data: uDataLine, label: '非机动车总流量'},
+                  ]}
+                  xAxis={[{scaleType: 'point', data: xLabels}]}
+                  yAxis={[{width: 50}]}
+                  margin={margin}
+                  sx={{boxShadow: boxShadow}}
+                />
+                <BarChart
+                  height={300}
+                  series={[
+                    {
+                      data: pDataBar,
+                      label: '信号灯平均等待时长',
+                      id: 'pvId',
+
+                      yAxisId: 'leftAxisId',
+                    },
+                    {
+                      data: uDataBar,
+                      label: '路口平均通行时长',
+                      id: 'uvId',
+
+                      yAxisId: 'rightAxisId',
+                    },
+                  ]}
+                  xAxis={[{data: xLabels}]}
+                  yAxis={[
+                    {id: 'leftAxisId', width: 50},
+                    {id: 'rightAxisId', position: 'right'},
+                  ]}
+                  sx={{boxShadow: boxShadow}}
+                />
+              </Box>
+            </Box>
           </Box>
 
           <Box sx={{height: '24%', display: 'flex', flexShrink: 0, m: 2, gap: 2}}>
@@ -178,6 +243,29 @@ export default function App() {
     </Box>
   )
 }
+
+const margin = {right: 24};
+const uDataLine = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
+const pDataLine = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
+const xLabels = [
+  '00:00',
+  '03:00',
+  '06:00',
+  '09:00',
+  '12:00',
+  '15:00',
+  '18:00',
+];
+
+const uDataBar = [40, 30, 20, 27, 18, 23, 34];
+const pDataBar = [24, 13, 98, 39, 48, 38, 43];
+
+const dataPie = [
+  {label: '人行道', value: 400},
+  {label: '地铁口', value: 300},
+  {label: '路口', value: 300},
+  {label: '商业区', value: 200},
+];
 
 const boxShadow = '2px 6px 12px -2px rgba(53, 83, 245, 0.2)'
 
