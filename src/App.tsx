@@ -29,6 +29,60 @@ export default function App() {
   const [inputValue, setInputValue] = useState("请分析当前交通状况")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  const fetchStreamData = async (prompt: string) => {
+    const response = await fetch('https://api.openai.com/v1/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer YOUR_API_KEY`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4',
+        prompt: prompt,
+        stream: true // 启用流式响应
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('请求失败');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let done = false;
+
+    while (!done) {
+      const {value, done: readerDone} = await reader.read();
+      done = readerDone;
+      const chunk = decoder.decode(value, {stream: true});
+      console.log(chunk); // 实时处理每个数据块
+    }
+  };
+
+  const charIndex = useRef(0);
+  const text = useRef("");
+
+  function typeEffect() {
+    if (charIndex.current < text.current.length) {
+      const index = charIndex.current++;
+      setDialogs(prev => {
+        const last = prev[prev.length - 1]
+        return [...prev.slice(0, prev.length - 1), {...last, text: last.text + text.current.charAt(index)}]
+      })
+      setTimeout(typeEffect, 10); // 控制打字速度
+    }
+  }
+
+  function fetchAndType(response: Dialog) {
+    // const response = await fetchStreamData(prompt);
+    text.current = response.text // 拼接流式数据
+    response.text = ""
+    console.log(text.current)
+    setDialogs(prev => [...prev, response])
+    charIndex.current = 0
+    typeEffect() // 启动打字机效果
+  }
+
   const handleSendMessage = () => {
     if (inputValue.trim() === "") return
 
@@ -51,7 +105,8 @@ export default function App() {
         isUser: false,
         timestamp: new Date()
       }
-      setDialogs(prev => [...prev, aiResponse])
+      fetchAndType(aiResponse)
+      // setDialogs(prev => [...prev, aiResponse])
     }, 1000)
   }
 
@@ -72,7 +127,8 @@ export default function App() {
         isUser: false,
         timestamp: new Date()
       }
-      setDialogs(prev => [...prev, aiResponse])
+      fetchAndType(aiResponse)
+      // setDialogs(prev => [...prev, aiResponse])
     }, 1000)
   }
 
@@ -93,7 +149,8 @@ export default function App() {
         isUser: false,
         timestamp: new Date()
       }
-      setDialogs(prev => [...prev, aiResponse])
+      fetchAndType(aiResponse)
+      // setDialogs(prev => [...prev, aiResponse])
     }, 1000)
   }
 
