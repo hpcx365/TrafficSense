@@ -1,8 +1,9 @@
-import React from "react";
-import {Avatar, Box, Button, Card, TextField, Typography} from "@mui/material";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import LightbulbIcon from "@mui/icons-material/Lightbulb";
-import SendIcon from "@mui/icons-material/Send";
+import React from "react"
+import {Avatar, Box, Button, Card, TextField, Typography} from "@mui/material"
+import TrendingUpIcon from "@mui/icons-material/TrendingUp"
+import LightbulbIcon from "@mui/icons-material/Lightbulb"
+import SendIcon from "@mui/icons-material/Send"
+import MuiMarkdown from 'mui-markdown'
 
 export interface Dialog {
   id: number;
@@ -93,7 +94,7 @@ export const DialogHistory: React.FC<DialogHistoryProps> = (
                 position: 'relative',
               }}
             >
-              <Typography>{dialog.text}</Typography>
+              <MuiMarkdown>{dialog.text}</MuiMarkdown>
             </Card>
             <Avatar sx={{bgcolor: '#d75353', ml: 2}}>您</Avatar>
           </Box>
@@ -112,9 +113,9 @@ export const DialogHistory: React.FC<DialogHistoryProps> = (
                 position: 'relative',
               }}
             >
-              <Typography sx={{mb: 2}}>{dialog.text}</Typography>
+              <MuiMarkdown>{dialog.text}</MuiMarkdown>
               <Typography variant="caption"
-                          sx={{display: 'block', position: 'absolute', bottom: 8, left: 16, opacity: 0.7}}>
+                          sx={{display: 'block', bottom: 8, left: 16, opacity: 0.7, mt: 1}}>
                 {dialog.timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
               </Typography>
             </Card>

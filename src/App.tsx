@@ -11,6 +11,9 @@ import EditRoadIcon from '@mui/icons-material/EditRoad';
 import {LineChart} from '@mui/x-charts/LineChart';
 import {BarChart, PieChart, RadarChart} from '@mui/x-charts';
 
+const healthCheckUrl = 'http://10.249.66.215:8000/api/health'
+const chatStreamUrl = 'http://10.249.66.215:8000/api/chat/stream'
+
 export default function App() {
   const dialogId = useRef(0)
 
@@ -21,42 +24,28 @@ export default function App() {
   const [dialogs, setDialogs] = useState<Dialog[]>([
     {
       id: allocateDialogId(),
-      text: "您好！我是TrafficSense AI助手，请问有什么可以帮助您的？",
+      text: '您好！我是TrafficSense AI助手，请问有什么可以帮助您的？',
       isUser: false,
-      timestamp: new Date()
+      timestamp: new Date(),
     },
   ])
-  const [inputValue, setInputValue] = useState("请分析当前交通状况")
+  const [inputValue, setInputValue] = useState('请分析当前交通状况')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const fetchStreamData = async (prompt: string) => {
-    const response = await fetch('https://api.openai.com/v1/completions', {
+  const fetchAiResponseText = async (prompt: string) => {
+    const response = await fetch(chatStreamUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer YOUR_API_KEY`
       },
       body: JSON.stringify({
-        model: 'gpt-4',
-        prompt: prompt,
-        stream: true // 启用流式响应
+        message: prompt,
       })
     });
-
     if (!response.ok) {
-      throw new Error('请求失败');
+      throw new Error('请求失败')
     }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder('utf-8');
-    let done = false;
-
-    while (!done) {
-      const {value, done: readerDone} = await reader.read();
-      done = readerDone;
-      const chunk = decoder.decode(value, {stream: true});
-      console.log(chunk); // 实时处理每个数据块
-    }
+    return response.text()
   };
 
   const charIndex = useRef(0);
@@ -69,16 +58,25 @@ export default function App() {
         const last = prev[prev.length - 1]
         return [...prev.slice(0, prev.length - 1), {...last, text: last.text + text.current.charAt(index)}]
       })
-      setTimeout(typeEffect, 10); // 控制打字速度
+      setTimeout(typeEffect, 5); // 控制打字速度
     }
   }
 
-  function fetchAndType(response: Dialog) {
-    // const response = await fetchStreamData(prompt);
-    text.current = response.text // 拼接流式数据
-    response.text = ""
-    console.log(text.current)
-    setDialogs(prev => [...prev, response])
+  async function fetchAndType(prompt: string) {
+    // let response = await fetchAiResponseText(prompt) // 拼接流式数据
+    // response = response.trim()
+    // console.log(response)
+    // console.log(response.split('data: '))
+    // const dataArr = response.split('data: ')
+    // response = JSON.parse(dataArr[dataArr.length - 1]).content + JSON.parse(dataArr[dataArr.length - 2])
+    let response = "根据当前观测，深圳北站及其周边区域在暑假返程高峰期间出现严重交通拥堵。针对这一情况，建议如下：\n\n1. 交通疏导措施：\n   - 增派交警和志愿者在深圳北站及周边主要路口进行现场疏导，保障交通有序。\n   - 临时调整信号灯配时，优先保障进出站主干道的通行效率。\n2. 公共交通引导：\n   - 增加地铁、公交等公共交通运力，鼓励旅客选择公共交通出行，减少小汽车进站压力。\n   - 在站外设置临时接驳点，分流接送车辆，避免集中在站前广场。\n3. 信息发布与诱导：\n   - 通过导航App、广播、电子显示屏等渠道，实时发布路况信息，引导车辆绕行或错峰出行。\n   - 提前告知旅客高峰时段，建议合理安排出行时间。\n4. 停车管理：\n   - 临时开放周边空地作为临时停车场，缓解停车压力。\n   - 严格管理非法停车，确保道路畅通。\n\n如需更详细的路网数据分析、具体拥堵点定位或优化前后效果评估，请提供更详细的交通数据或指定分析范围，我可进一步生成数据支撑的决策报告。"
+    text.current = response
+    setDialogs(prev => [...prev, {
+      id: allocateDialogId(),
+      text: '',
+      isUser: false,
+      timestamp: new Date()
+    }])
     charIndex.current = 0
     typeEffect() // 启动打字机效果
   }
@@ -86,7 +84,6 @@ export default function App() {
   const handleSendMessage = () => {
     if (inputValue.trim() === "") return
 
-    // 添加用户消息
     const newUserMessage: Dialog = {
       id: allocateDialogId(),
       text: inputValue,
@@ -97,16 +94,8 @@ export default function App() {
     setDialogs(prev => [...prev, newUserMessage])
     setInputValue("")
 
-    // 模拟AI回复
-    setTimeout(() => {
-      const aiResponse: Dialog = {
-        id: allocateDialogId(),
-        text: `已收到您的消息: "${inputValue}"。正在分析中...`,
-        isUser: false,
-        timestamp: new Date()
-      }
-      fetchAndType(aiResponse)
-      // setDialogs(prev => [...prev, aiResponse])
+    setTimeout(async () => {
+      await fetchAndType(inputValue)
     }, 1000)
   }
 
@@ -119,16 +108,8 @@ export default function App() {
     }
     setDialogs(prev => [...prev, newMessage])
 
-    // 模拟AI回复
-    setTimeout(() => {
-      const aiResponse: Dialog = {
-        id: allocateDialogId(),
-        text: "溯源预测分析完成：根据历史数据和当前交通状况，预计未来1小时内主要拥堵路段将出现在市中心区域，建议提前规划绕行路线。",
-        isUser: false,
-        timestamp: new Date()
-      }
-      fetchAndType(aiResponse)
-      // setDialogs(prev => [...prev, aiResponse])
+    setTimeout(async () => {
+      await fetchAndType(newMessage.text)
     }, 1000)
   }
 
@@ -141,16 +122,8 @@ export default function App() {
     }
     setDialogs(prev => [...prev, newMessage])
 
-    // 模拟AI回复
-    setTimeout(() => {
-      const aiResponse: Dialog = {
-        id: allocateDialogId(),
-        text: "决策建议：建议立即调度附近3辆交警巡逻车前往主要拥堵点进行交通疏导，并通过交通广播提醒市民绕行。",
-        isUser: false,
-        timestamp: new Date()
-      }
-      fetchAndType(aiResponse)
-      // setDialogs(prev => [...prev, aiResponse])
+    setTimeout(async () => {
+      await fetchAndType(newMessage.text)
     }, 1000)
   }
 
@@ -192,6 +165,7 @@ export default function App() {
             </Box>
             <Box sx={{flex: 1, flexDirection: 'column', display: 'flex', overflowY: 'hidden'}}>
               <Box sx={{flex: 1, flexDirection: 'row', display: 'flex', overflowY: 'hidden', gap: 2, p: 2}}>
+                <img src={'http://localhost:5173/src/assets/img.png'}/>
                 <PieChart
                   series={[
                     {
