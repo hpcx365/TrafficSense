@@ -1,17 +1,16 @@
 import React, {useEffect, useRef, useState} from 'react'
 import {Box, Divider, List, ListItem, Typography} from '@mui/material'
-import {ChatArea, type Dialog} from "./ChatArea.tsx"
-import PrimarySearchAppBar from "./AppBar.tsx"
-import LocalPoliceIcon from "@mui/icons-material/LocalPolice";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from '@mui/icons-material/Error';
-import CarCrashIcon from '@mui/icons-material/CarCrash';
-import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
-import EditRoadIcon from '@mui/icons-material/EditRoad';
-import {LineChart} from '@mui/x-charts/LineChart';
-import {BarChart, PieChart, RadarChart} from '@mui/x-charts';
+import {ChatArea, type Dialog} from './ChatArea.tsx'
+import PrimarySearchAppBar from './AppBar.tsx'
+import LocalPoliceIcon from '@mui/icons-material/LocalPolice'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import ErrorIcon from '@mui/icons-material/Error'
+import CarCrashIcon from '@mui/icons-material/CarCrash'
+import NotificationImportantIcon from '@mui/icons-material/NotificationImportant'
+import EditRoadIcon from '@mui/icons-material/EditRoad'
+import {LineChart} from '@mui/x-charts/LineChart'
+import {BarChart, PieChart, RadarChart} from '@mui/x-charts'
 
-const healthCheckUrl = 'http://10.249.66.215:8000/api/health'
 const chatStreamUrl = 'http://10.249.66.215:8000/api/chat/stream'
 
 export default function App() {
@@ -30,112 +29,110 @@ export default function App() {
     },
   ])
   const [inputValue, setInputValue] = useState('请分析当前交通状况')
+  const [isStreaming, setStreaming] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const fetchAiResponseText = async (prompt: string) => {
-    const response = await fetch(chatStreamUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: prompt,
+  function appendDialogText(isUser: boolean, text: string) {
+    setDialogs(prev => {
+      const last = prev[prev.length - 1]
+      if (last.isUser != isUser) {
+        return [...prev, {
+          id: allocateDialogId(),
+          text: text,
+          isUser: isUser,
+          timestamp: new Date(),
+        }]
+      }
+      return [...prev.slice(0, prev.length - 1), {...last, text: last.text + text}]
+    })
+  }
+
+  const startStream = async (prompt: string) => {
+    try {
+      setStreaming(true)
+
+      const response = await fetch(chatStreamUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: prompt,
+        })
       })
-    });
-    if (!response.ok) {
-      throw new Error('请求失败')
-    }
-    return response.text()
-  };
 
-  const charIndex = useRef(0);
-  const text = useRef("");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
-  function typeEffect() {
-    if (charIndex.current < text.current.length) {
-      const index = charIndex.current++;
-      setDialogs(prev => {
-        const last = prev[prev.length - 1]
-        return [...prev.slice(0, prev.length - 1), {...last, text: last.text + text.current.charAt(index)}]
-      })
-      setTimeout(typeEffect, 5); // 控制打字速度
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder('utf-8')
+
+      // 持续读取流式数据
+      while (true) {
+        const { done, value } = await reader.read()
+
+        if (done) {
+          break
+        }
+
+        // 解码接收到的文本数据
+        const chunks =
+          decoder.decode(value, {stream: true})
+            .trim()
+            .split('\n')
+            .map(line => JSON.parse(line.trim()))
+            .filter(obj => obj !== null);
+
+        // 更新状态，将新接收到的数据添加到 dialog 中
+        chunks.forEach(chunk => {
+          if (['thought_token', 'response_token', 'action_token'].indexOf(chunk.type) > -1) {
+            appendDialogText(false, chunk.content)
+          }
+        })
+      }
+    } finally {
+      setStreaming(false)
     }
   }
 
-  async function fetchAndType(prompt: string) {
-    // let response = await fetchAiResponseText(prompt) // 拼接流式数据
-    // response = response.trim()
-    // console.log(response)
-    // console.log(response.split('data: '))
-    // const dataArr = response.split('data: ')
-    // response = JSON.parse(dataArr[dataArr.length - 1]).content + JSON.parse(dataArr[dataArr.length - 2])
-    let response = "根据当前观测，深圳北站及其周边区域在暑假返程高峰期间出现严重交通拥堵。针对这一情况，建议如下：\n\n1. 交通疏导措施：\n   - 增派交警和志愿者在深圳北站及周边主要路口进行现场疏导，保障交通有序。\n   - 临时调整信号灯配时，优先保障进出站主干道的通行效率。\n2. 公共交通引导：\n   - 增加地铁、公交等公共交通运力，鼓励旅客选择公共交通出行，减少小汽车进站压力。\n   - 在站外设置临时接驳点，分流接送车辆，避免集中在站前广场。\n3. 信息发布与诱导：\n   - 通过导航App、广播、电子显示屏等渠道，实时发布路况信息，引导车辆绕行或错峰出行。\n   - 提前告知旅客高峰时段，建议合理安排出行时间。\n4. 停车管理：\n   - 临时开放周边空地作为临时停车场，缓解停车压力。\n   - 严格管理非法停车，确保道路畅通。\n\n如需更详细的路网数据分析、具体拥堵点定位或优化前后效果评估，请提供更详细的交通数据或指定分析范围，我可进一步生成数据支撑的决策报告。"
-    text.current = response
-    setDialogs(prev => [...prev, {
-      id: allocateDialogId(),
-      text: '',
-      isUser: false,
-      timestamp: new Date()
-    }])
-    charIndex.current = 0
-    typeEffect() // 启动打字机效果
-  }
-
-  const handleSendMessage = () => {
-    if (inputValue.trim() === "") return
-
-    const newUserMessage: Dialog = {
-      id: allocateDialogId(),
-      text: inputValue,
-      isUser: true,
-      timestamp: new Date()
+  async function sendMessage(prompt: string) {
+    if (isStreaming) {
+      return
     }
-
-    setDialogs(prev => [...prev, newUserMessage])
-    setInputValue("")
-
-    setTimeout(async () => {
-      await fetchAndType(inputValue)
-    }, 1000)
+    appendDialogText(true, prompt)
+    await startStream(prompt)
   }
 
-  const handleTraceabilityPrediction = () => {
-    const newMessage: Dialog = {
-      id: allocateDialogId(),
-      text: "请求执行溯源预测分析",
-      isUser: true,
-      timestamp: new Date()
+  const onSend = async () => {
+    if (isStreaming) {
+      return
     }
-    setDialogs(prev => [...prev, newMessage])
-
-    setTimeout(async () => {
-      await fetchAndType(newMessage.text)
-    }, 1000)
-  }
-
-  const handleDecisionSuggestion = () => {
-    const newMessage: Dialog = {
-      id: allocateDialogId(),
-      text: "请求决策建议",
-      isUser: true,
-      timestamp: new Date()
+    const prompt = inputValue.trim()
+    if (prompt === '') {
+      return
     }
-    setDialogs(prev => [...prev, newMessage])
-
-    setTimeout(async () => {
-      await fetchAndType(newMessage.text)
-    }, 1000)
+    setInputValue('')
+    await sendMessage(prompt)
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      handleSendMessage()
+  const onTraceabilityPrediction = async () => {
+    await sendMessage('请求执行溯源预测分析')
+  }
+
+  const onDecisionSuggestion = async () => {
+    await sendMessage('请求决策建议')
+  }
+
+  const onKeyPress = async (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      await onSend()
     }
   }
 
   // 滚动到最新消息
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({behavior: "smooth"})
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'})
   }, [dialogs])
 
   return (
@@ -144,16 +141,16 @@ export default function App() {
         <PrimarySearchAppBar/>
       </Box>
       <Box sx={{width: '100%', height: '100%', flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden'}}>
-        <Box sx={{width: '30%', height: '100%', display: 'flex', flexDirection: 'row', overflow: 'hidden', backgroundColor: '#f6f7fb', boxShadow: boxShadow}}>
+        <Box sx={{minWidth: '400px', width: '35%', height: '100%', display: 'flex', flexDirection: 'row', overflow: 'hidden', backgroundColor: '#f6f7fb', boxShadow: boxShadow}}>
           <ChatArea
             dialogs={dialogs}
             messagesEndRef={messagesEndRef}
-            handleTraceabilityPrediction={handleTraceabilityPrediction}
-            handleDecisionSuggestion={handleDecisionSuggestion}
+            handleTraceabilityPrediction={onTraceabilityPrediction}
+            handleDecisionSuggestion={onDecisionSuggestion}
             inputValue={inputValue}
             setInputValue={setInputValue}
-            handleSendMessage={handleSendMessage}
-            handleKeyPress={handleKeyPress}
+            handleSendMessage={onSend}
+            handleKeyPress={onKeyPress}
           />
         </Box>
 
@@ -181,7 +178,7 @@ export default function App() {
                 />
                 <RadarChart
                   height={300}
-                  series={[{label: 'Lisa', data: [120, 98, 86, 99, 85, 65]}]}
+                  series={[{data: [120, 98, 86, 99, 85, 65]}]}
                   radar={{
                     max: 120,
                     metrics: ['高峰承载能力', '事故处理能力', '流量运输能力', '拥堵处理能力', '行人舒适度', '噪音控制'],
@@ -275,9 +272,9 @@ export default function App() {
   )
 }
 
-const margin = {right: 24};
-const uDataLine = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
-const pDataLine = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
+const margin = {right: 24}
+const uDataLine = [4000, 3000, 2000, 2780, 1890, 2390, 3490]
+const pDataLine = [2400, 1398, 9800, 3908, 4800, 3800, 4300]
 const xLabels = [
   '00:00',
   '03:00',
@@ -286,17 +283,17 @@ const xLabels = [
   '12:00',
   '15:00',
   '18:00',
-];
+]
 
-const uDataBar = [40, 30, 20, 27, 18, 23, 34];
-const pDataBar = [24, 13, 98, 39, 48, 38, 43];
+const uDataBar = [40, 30, 20, 27, 18, 23, 34]
+const pDataBar = [24, 13, 98, 39, 48, 38, 43]
 
 const dataPie = [
   {label: '人行道', value: 400},
   {label: '地铁口', value: 300},
   {label: '路口', value: 300},
   {label: '商业区', value: 200},
-];
+]
 
 const boxShadow = '2px 6px 12px -2px rgba(53, 83, 245, 0.2)'
 

@@ -1,9 +1,23 @@
 import React from "react"
-import {Avatar, Box, Button, Card, TextField, Typography} from "@mui/material"
+import {Avatar, Box, Button, Card, createTheme, TextField, ThemeProvider, Typography} from "@mui/material"
 import TrendingUpIcon from "@mui/icons-material/TrendingUp"
 import LightbulbIcon from "@mui/icons-material/Lightbulb"
 import SendIcon from "@mui/icons-material/Send"
 import MuiMarkdown from 'mui-markdown'
+
+const theme = createTheme({
+  typography: {
+    h1: {
+      fontSize: '3rem',
+    },
+    h2: {
+      fontSize: '2rem',
+    },
+    h3: {
+      fontSize: '1rem',
+    },
+  },
+});
 
 export interface Dialog {
   id: number;
@@ -78,52 +92,54 @@ export const DialogHistory: React.FC<DialogHistoryProps> = (
   }
 ) => {
   return (
-    <Box sx={{flexGrow: 1, overflowY: 'auto', px: 4}}>
-      {dialogs.map(dialog =>
-        dialog.isUser ? (
-          <Box key={dialog.id} sx={{display: 'flex', justifyContent: 'flex-end', mb: 3}}>
-            <Card
-              sx={{
-                p: 2,
-                backgroundColor: '#1890ff',
-                color: 'white',
-                borderRadius: 4,
-                boxShadow: '0 4px 12px 1px rgba(0, 83, 245, 0.2)',
-                maxWidth: '75%',
-                textAlign: 'left',
-                position: 'relative',
-              }}
-            >
-              <MuiMarkdown>{dialog.text}</MuiMarkdown>
-            </Card>
-            <Avatar sx={{bgcolor: '#d75353', ml: 2}}>您</Avatar>
-          </Box>
-        ) : (
-          <Box key={dialog.id} sx={{display: 'flex', justifyContent: 'flex-start', mb: 3}}>
-            <Avatar sx={{bgcolor: '#4a90e2', mr: 2}}>AI</Avatar>
-            <Card
-              sx={{
-                p: 2,
-                backgroundColor: 'white',
-                color: '#333',
-                borderRadius: 4,
-                boxShadow: '0 4px 12px 1px rgba(68, 88, 199, 0.2)',
-                maxWidth: '75%',
-                textAlign: 'left',
-                position: 'relative',
-              }}
-            >
-              <MuiMarkdown>{dialog.text}</MuiMarkdown>
-              <Typography variant="caption"
-                          sx={{display: 'block', bottom: 8, left: 16, opacity: 0.7, mt: 1}}>
-                {dialog.timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
-              </Typography>
-            </Card>
-          </Box>
-        )
-      )}
-      <div ref={messagesEndRef}/>
-    </Box>
+    <ThemeProvider theme={theme}>
+      <Box sx={{flexGrow: 1, overflowY: 'auto', px: 4}}>
+        {dialogs.map(dialog =>
+          dialog.isUser ? (
+            <Box key={dialog.id} sx={{display: 'flex', justifyContent: 'flex-end', mb: 3}}>
+              <Card
+                sx={{
+                  p: 2,
+                  backgroundColor: '#1890ff',
+                  color: 'white',
+                  borderRadius: 4,
+                  boxShadow: '0 4px 12px 1px rgba(0, 83, 245, 0.2)',
+                  maxWidth: '75%',
+                  textAlign: 'left',
+                  position: 'relative',
+                }}
+              >
+                <MuiMarkdown>{dialog.text}</MuiMarkdown>
+              </Card>
+              <Avatar sx={{bgcolor: '#d75353', ml: 2}}>您</Avatar>
+            </Box>
+          ) : (
+            <Box key={dialog.id} sx={{display: 'flex', justifyContent: 'flex-start', mb: 3}}>
+              <Avatar sx={{bgcolor: '#4a90e2', mr: 2}}>AI</Avatar>
+              <Card
+                sx={{
+                  p: 2,
+                  backgroundColor: 'white',
+                  color: '#333',
+                  borderRadius: 4,
+                  boxShadow: '0 4px 12px 1px rgba(68, 88, 199, 0.2)',
+                  maxWidth: '75%',
+                  textAlign: 'left',
+                  position: 'relative',
+                }}
+              >
+                <MuiMarkdown>{dialog.text}</MuiMarkdown>
+                <Typography variant="caption"
+                            sx={{display: 'block', bottom: 8, left: 16, opacity: 0.7, mt: 1}}>
+                  {dialog.timestamp.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
+                </Typography>
+              </Card>
+            </Box>
+          )
+        )}
+        <div ref={messagesEndRef}/>
+      </Box>
+    </ThemeProvider>
   )
 }
 
