@@ -493,7 +493,7 @@ def get_new_scenario(request):
     # The simulation will be restarted via a websocket message.
     current_scenario = scenarios[scenario_name]
     # We avoid web.FileResponse here because we want to disable caching.
-    html = open(os.path.join(DIR, 'static', 'index.html')).read()
+    html = open(os.path.join(DIR, 'static', 'index.html'), encoding='UTF-8').read()
     return web.Response(text=html, content_type='text/html', headers=NO_CACHE_HEADER)
 
 
