@@ -65,7 +65,10 @@ export default function App() {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const reader = response.body.getReader()
+      if (response.body == null) {
+        throw new Error('Response body is null')
+      }
+      const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8')
 
       // 持续读取流式数据
@@ -162,7 +165,6 @@ export default function App() {
             </Box>
             <Box sx={{flex: 1, flexDirection: 'column', display: 'flex', overflowY: 'hidden'}}>
               <Box sx={{flex: 1, flexDirection: 'row', display: 'flex', overflowY: 'hidden', gap: 2, p: 2}}>
-                <img src={'http://localhost:5173/src/assets/img.png'}/>
                 <PieChart
                   series={[
                     {
