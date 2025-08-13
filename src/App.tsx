@@ -10,10 +10,11 @@ import NotificationImportantIcon from '@mui/icons-material/NotificationImportant
 import EditRoadIcon from '@mui/icons-material/EditRoad'
 import {LineChart} from '@mui/x-charts/LineChart'
 import {BarChart, PieChart, RadarChart} from '@mui/x-charts'
+import SimulationArea from "./SimArea.tsx";
 
 const chatStreamUrl = 'http://10.249.66.215:8000/api/chat/stream'
 
-const boxShadow = '2px 6px 12px -2px rgba(53, 83, 245, 0.2)'
+export const boxShadow = '2px 6px 12px -2px rgba(53, 83, 245, 0.2)'
 
 export default function App() {
   const dialogId = useRef(0)
@@ -34,7 +35,7 @@ export default function App() {
   const [isStreaming, setStreaming] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const [activePanel, setActivePanel] = useState<'monitor' | 'simulation'>('monitor')
+  const [activePanel, setActivePanel] = useState<'monitor' | 'simulation'>('simulation')
 
   function appendDialogText(isUser: boolean, text: string) {
     setDialogs(prev => {
@@ -52,9 +53,10 @@ export default function App() {
   }
 
   const startStream = async (prompt: string) => {
-    try {
-      setStreaming(true)
+    setStreaming(true)
+    appendDialogText(false, '')
 
+    try {
       const response = await fetch(chatStreamUrl, {
         method: 'POST',
         headers: {
@@ -64,16 +66,14 @@ export default function App() {
           message: prompt,
         })
       })
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-
       if (response.body == null) {
         throw new Error('Response body is null')
       }
+
       const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8')
 
       // 持续读取流式数据
       while (true) {
@@ -85,7 +85,7 @@ export default function App() {
 
         // 解码接收到的文本数据
         const chunks =
-          decoder.decode(value, {stream: true})
+          new TextDecoder('utf-8').decode(value, {stream: true})
             .trim()
             .split('\n')
             .map(line => JSON.parse(line.trim()))
@@ -98,6 +98,9 @@ export default function App() {
           }
         })
       }
+    } catch (e) {
+      appendDialogText(false, '遇到了网络错误，请稍后重试。')
+      throw e
     } finally {
       setStreaming(false)
     }
@@ -148,7 +151,7 @@ export default function App() {
         <PrimarySearchAppBar/>
       </Box>
       <Box sx={{width: '100%', height: '100%', flex: 1, display: 'flex', flexDirection: 'row', overflow: 'hidden'}}>
-        <Box sx={{minWidth: '400px', width: '30%', height: '100%', display: 'flex', flexDirection: 'row', overflow: 'hidden', backgroundColor: '#f6f7fb', boxShadow: boxShadow}}>
+        <Box sx={{minWidth: '30%', height: '100%', display: 'flex', flexDirection: 'row', overflow: 'hidden', backgroundColor: '#f6f7fb', boxShadow: boxShadow}}>
           <ChatArea
             dialogs={dialogs}
             messagesEndRef={messagesEndRef}
@@ -182,7 +185,7 @@ export default function App() {
               <MonitorPanel/>
             </Box>
             <Box sx={{display: activePanel === 'simulation' ? 'flex' : 'none', overflowY: 'auto', flex: 1, flexDirection: 'column'}}>
-              <SimulationPanel/>
+              <SimulationArea/>
             </Box>
           </Box>
 
@@ -231,25 +234,25 @@ export default function App() {
   )
 }
 
-const SimulationPanel = () => {
-  return (
-    <div className="layout-parent">
-      <h1 id="loading">Loading...</h1>
-      <div id="sidebar">
-      </div>
-      <div id="canvas-wrapper">
-      </div>
-    </div>
-  )
-}
+// const SimulationPanel = () => {
+//   return (
+//     <div className="layout-parent">
+//       <h1 id="loading">Loading...</h1>
+//       <div id="sidebar">
+//       </div>
+//       <div id="canvas-wrapper">
+//       </div>
+//     </div>
+//   )
+// }
 
 const MonitorPanel = () => {
   const margin = {right: 24}
 
-  const uDataLine = [4000, 3000, 2000, 2780, 1890, 2390, 3490]
-  const pDataLine = [2400, 1398, 9800, 3908, 4800, 3800, 4300]
+  const uDataLine = [400, 300, 200, 278, 189, 239, 349]
+  const pDataLine = [240, 139, 980, 390, 480, 380, 430]
 
-  const xLabels = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00']
+  const xLabels = ['06:00', '06:30', '07:00', '07:30', '08:00', '08:30', '09:00']
 
   const uDataBar = [40, 30, 20, 27, 18, 23, 34]
   const pDataBar = [24, 13, 98, 39, 48, 38, 43]

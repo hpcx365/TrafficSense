@@ -1,0 +1,1 @@
+python "D:\sumo-1.24.0\tools\randomTrips.py" -n map.net.xml -r map.rou.xml -e 1000
