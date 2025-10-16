@@ -1,9 +1,8 @@
+import bs4
 import os
+import pandas as pd
 import subprocess
 import xml.etree.ElementTree as ET
-
-import bs4
-import pandas as pd
 from pyproj import Proj, Transformer
 from tqdm import tqdm
 
@@ -107,7 +106,7 @@ def run_sumo(config_file, fcd_file):
 
 
 if __name__ == '__main__':
-    config_file = input('sim.sumocfg: ')
+    config_file = 'sim.sumocfg'
 
     # 从配置文件中提取 net 文件路径
     net_file = get_net_file_from_config(config_file)

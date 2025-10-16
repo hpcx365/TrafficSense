@@ -1,3 +1,3 @@
 @echo off
-netconvert --osm-files map.osm -o map.net.xml
+netconvert --osm-files ./osm/shenzhen.osm -o ./net/shenzhen.net.xml
 pause

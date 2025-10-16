@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 /src/assets/
 /video/
+/test/fcd/
+/test/net/
+/test/osm/
+/test/rou/
+/doc/
